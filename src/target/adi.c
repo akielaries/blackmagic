@@ -90,6 +90,7 @@ static const arm_coresight_component_s arm_component_lut[] = {
 	{0x002, 0x00, 0, aa_nosupport, cidc_unknown, ARM_COMPONENT_STR("Cortex-M3 DWT", "(Data Watchpoint and Trace)")},
 	{0x003, 0x00, 0, aa_nosupport, cidc_unknown, ARM_COMPONENT_STR("Cortex-M3 FBP", "(Flash Patch and Breakpoint)")},
 	{0x008, 0x00, 0, aa_cortexm, cidc_gipc, ARM_COMPONENT_STR("Cortex-M0 SCS", "(System Control Space)")},
+  {0x009, 0x00, 0, aa_cortexm, cidc_gipc, ARM_COMPONENT_STR("Cortex-M1 SCS", "(System Control Space)")},
 	{0x00a, 0x00, 0, aa_nosupport, cidc_unknown, ARM_COMPONENT_STR("Cortex-M0 DWT", "(Data Watchpoint and Trace)")},
 	{0x00b, 0x00, 0, aa_nosupport, cidc_unknown, ARM_COMPONENT_STR("Cortex-M0 BPU", "(Breakpoint Unit)")},
 	{0x00c, 0x00, 0, aa_cortexm, cidc_gipc, ARM_COMPONENT_STR("Cortex-M4 SCS", "(System Control Space)")},
@@ -813,18 +814,26 @@ void adi_ap_component_probe(
 	}
 
 	/* CIDR preamble sanity check */
+  /*
 	if ((cidr & ~CID_CLASS_MASK) != CID_PREAMBLE) {
 		DEBUG_WARN("%s%" PRIu32 " 0x%0" PRIx32 "%08" PRIx32 ": 0x%08" PRIx32 " <- does not match preamble (0x%08" PRIx32
 				   ")\n",
 			indent, entry_number, (uint32_t)(base_address >> 32U), (uint32_t)base_address, cidr, CID_PREAMBLE);
 		return;
 	}
+  */
 
 	/* Extract Component ID class nibble */
 	const uint8_t cid_class = (cidr & CID_CLASS_MASK) >> CID_CLASS_SHIFT;
 
 	/* Read out the peripheral ID register */
 	const uint64_t pidr = adi_ap_read_pidr(ap, base_address);
+
+  if (pidr == 0 && base_address == 0xE000E000) {
+    DEBUG_WARN("WORKAROUND: PIDR is 0 at M1 SCS address, forcing probe!!!\n");
+    cortexm_probe(ap);
+    return;
+  }
 
 	/* ROM table */
 	if (cid_class == cidc_romtab) {
@@ -837,6 +846,7 @@ void adi_ap_component_probe(
 	} else {
 		/* Extract the designer code from the part ID register */
 		const uint16_t designer_code = adi_designer_from_pidr(pidr);
+    DEBUG_INFO("designer code: 0x%X\n", designer_code);
 
 		if (designer_code != JEP106_MANUFACTURER_ARM && designer_code != JEP106_MANUFACTURER_ARM_CHINA) {
 #ifndef DEBUG_TARGET_IS_NOOP

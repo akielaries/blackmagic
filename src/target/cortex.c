@@ -147,10 +147,12 @@ void cortex_read_cpuid(target_s *const target)
 		target->core = "M0";
 		target->target_options |= CORTEXM_TOPT_FLAVOUR_V6M;
 		break;
+    /*
 	case CORTEX_M1:
 		target->core = "M1";
 		target->target_options |= CORTEXM_TOPT_FLAVOUR_V6M;
 		break;
+    */
 	default: {
 		const adiv5_access_port_s *const ap = cortex_ap(target);
 		if (ap->designer_code == JEP106_MANUFACTURER_ATMEL) /* Protected Atmel device? */

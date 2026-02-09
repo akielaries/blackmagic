@@ -97,9 +97,11 @@ static const arm_coresight_component_s arm_component_lut[] = {
 	{0x00d, 0x00, 0, aa_nosupport, cidc_unknown, ARM_COMPONENT_STR("CoreSight ETM11", "(Embedded Trace)")},
 	{0x00e, 0x00, 0, aa_nosupport, cidc_unknown, ARM_COMPONENT_STR("Cortex-M7 FBP", "(Flash Patch and Breakpoint)")},
 	/* Cortex-M1 components */
+  /*
 	{0x00f, 0x00, 0, aa_cortexm, cidc_gipc, ARM_COMPONENT_STR("Cortex-M1 SCS", "(System Control Space)")},
 	{0x010, 0x00, 0, aa_nosupport, cidc_unknown, ARM_COMPONENT_STR("Cortex-M1 DWT", "(Data Watchpoint and Trace)")},
 	{0x011, 0x00, 0, aa_nosupport, cidc_unknown, ARM_COMPONENT_STR("Cortex-M1 BPU", "(Breakpoint Unit)")},
+  */
 	/* End Cortex-M1 components */
 	{0x101, 0x00, 0, aa_nosupport, cidc_unknown, ARM_COMPONENT_STR("System TSGEN", "(Time Stamp Generator)")},
 	{0x471, 0x00, 0, aa_nosupport, cidc_unknown, ARM_COMPONENT_STR("Cortex-M0 ROM", "(Cortex-M0 ROM)")},

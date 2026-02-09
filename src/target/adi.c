@@ -46,6 +46,7 @@
 #define SAMX5X_STATUSB_PROT (1U << 16U)
 
 #define ID_SAMx5x 0xcd0U
+#define GOWIN_M1_DPIDR 0x2ba01477U
 
 #if ENABLE_DEBUG == 1
 #define ARM_COMPONENT_STR(...) __VA_ARGS__
@@ -812,8 +813,10 @@ void adi_ap_component_probe(
 		return;
 	}
 
+	const bool is_gowin_m1 = adiv5_dp_read_dpidr(ap->dp) == GOWIN_M1_DPIDR;
+
 	/* CIDR preamble sanity check */
-	if ((cidr & ~CID_CLASS_MASK) != CID_PREAMBLE) {
+	if (!is_gowin_m1 && (cidr & ~CID_CLASS_MASK) != CID_PREAMBLE) {
 		DEBUG_WARN("%s%" PRIu32 " 0x%0" PRIx32 "%08" PRIx32 ": 0x%08" PRIx32 " <- does not match preamble (0x%08" PRIx32
 				   ")\n",
 			indent, entry_number, (uint32_t)(base_address >> 32U), (uint32_t)base_address, cidr, CID_PREAMBLE);
@@ -826,6 +829,18 @@ void adi_ap_component_probe(
 	/* Read out the peripheral ID register */
 	const uint64_t pidr = adi_ap_read_pidr(ap, base_address);
 
+	if (pidr == 0) {
+		if (is_gowin_m1 && base_address == 0xE000E000U) {
+      // TODO: maybe make this print more sensible
+			DEBUG_WARN("PIDR is 0 at M1 SCS address, forcing probe anyways!!!!\n");
+			cortexm_probe(ap);
+		} else {
+			DEBUG_WARN("%s%" PRIu32 " 0x%0" PRIx32 "%08" PRIx32 ": PIDR is 0, skipping component\n", indent,
+				entry_number, (uint32_t)(base_address >> 32U), (uint32_t)base_address);
+		}
+		return;
+	}
+
 	/* ROM table */
 	if (cid_class == cidc_romtab) {
 		/* Validate that the SIZE field is 0 per the spec */
@@ -837,6 +852,7 @@ void adi_ap_component_probe(
 	} else {
 		/* Extract the designer code from the part ID register */
 		const uint16_t designer_code = adi_designer_from_pidr(pidr);
+		DEBUG_INFO("designer code: 0x%X\n", designer_code);
 
 		if (designer_code != JEP106_MANUFACTURER_ARM && designer_code != JEP106_MANUFACTURER_ARM_CHINA) {
 #ifndef DEBUG_TARGET_IS_NOOP

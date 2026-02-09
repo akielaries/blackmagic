@@ -43,6 +43,7 @@
 /* Cortex-M CPU IDs */
 #define CORTEX_M0  0xc200U
 #define CORTEX_M0P 0xc600U
+#define CORTEX_M1  0xc210U
 #define CORTEX_M3  0xc230U
 #define CORTEX_M4  0xc240U
 #define CORTEX_M7  0xc270U

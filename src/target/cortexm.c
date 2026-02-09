@@ -465,6 +465,9 @@ bool cortexm_probe(adiv5_access_port_s *ap)
 			PROBE(stm32f1_probe);               /* Care for other STM32F1 clones (?) */
 			PROBE(lpc15xx_probe);               /* Thanks to JojoS for testing */
 			PROBE(mm32f3xx_probe);              /* MindMotion MM32 */
+		} else if (target->part_id == 0x470U) { /* Cortex-M1 ROM */
+			target->driver = "Generic Cortex-M1";
+			return true;
 		} else if (target->part_id == 0x471U) { /* Cortex-M0 ROM */
 			PROBE(lpc11xx_probe);               /* LPC24C11 */
 			PROBE(lpc43xx_probe);

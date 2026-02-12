@@ -96,6 +96,11 @@ static const arm_coresight_component_s arm_component_lut[] = {
 	{0x00c, 0x00, 0, aa_cortexm, cidc_gipc, ARM_COMPONENT_STR("Cortex-M4 SCS", "(System Control Space)")},
 	{0x00d, 0x00, 0, aa_nosupport, cidc_unknown, ARM_COMPONENT_STR("CoreSight ETM11", "(Embedded Trace)")},
 	{0x00e, 0x00, 0, aa_nosupport, cidc_unknown, ARM_COMPONENT_STR("Cortex-M7 FBP", "(Flash Patch and Breakpoint)")},
+	/* Cortex-M1 components */
+	{0x000, 0x00, 0, aa_cortexm, cidc_gipc, ARM_COMPONENT_STR("Cortex-M1 SCS", "(System Control Space)")},
+	{0x000, 0x00, 0, aa_nosupport, cidc_unknown, ARM_COMPONENT_STR("Cortex-M1 DWT", "(Data Watchpoint)")},
+	{0x000, 0x00, 0, aa_nosupport, cidc_unknown, ARM_COMPONENT_STR("Cortex-M1 BPU", "(Breakpoint Unit)")},
+	/* End Cortex-M1 components */
 	{0x101, 0x00, 0, aa_nosupport, cidc_unknown, ARM_COMPONENT_STR("System TSGEN", "(Time Stamp Generator)")},
 	{0x471, 0x00, 0, aa_nosupport, cidc_unknown, ARM_COMPONENT_STR("Cortex-M0 ROM", "(Cortex-M0 ROM)")},
 	{0x490, 0x00, 0, aa_nosupport, cidc_unknown, ARM_COMPONENT_STR("Cortex-A15 GIC", "(Generic Interrupt Controller)")},
@@ -615,6 +620,9 @@ static void adi_parse_adi_rom_table(adiv5_access_port_s *const ap, const target_
 				cortexm_probe(ap);
 				return;
 			}
+		} else if (ap->designer_code == JEP106_MANUFACTURER_ARM && ap->partno == 0x470U) {
+			// This is a Cortex-M1 ROM table, which has silent sub-components
+			ap->flags |= ADIV5_AP_FLAGS_CORTEXM1_NO_DEBUG_IDS;
 		}
 	}
 
@@ -813,10 +821,8 @@ void adi_ap_component_probe(
 		return;
 	}
 
-	const bool is_gowin_m1 = adiv5_dp_read_dpidr(ap->dp) == GOWIN_M1_DPIDR;
-
 	/* CIDR preamble sanity check */
-	if (!is_gowin_m1 && (cidr & ~CID_CLASS_MASK) != CID_PREAMBLE) {
+	if ((cidr & ~CID_CLASS_MASK) != CID_PREAMBLE) {
 		DEBUG_WARN("%s%" PRIu32 " 0x%0" PRIx32 "%08" PRIx32 ": 0x%08" PRIx32 " <- does not match preamble (0x%08" PRIx32
 				   ")\n",
 			indent, entry_number, (uint32_t)(base_address >> 32U), (uint32_t)base_address, cidr, CID_PREAMBLE);
@@ -829,6 +835,7 @@ void adi_ap_component_probe(
 	/* Read out the peripheral ID register */
 	const uint64_t pidr = adi_ap_read_pidr(ap, base_address);
 
+  /*
 	if (pidr == 0) {
 		if (is_gowin_m1 && base_address == 0xE000E000U) {
       // TODO: maybe make this print more sensible
@@ -840,6 +847,7 @@ void adi_ap_component_probe(
 		}
 		return;
 	}
+  */
 
 	/* ROM table */
 	if (cid_class == cidc_romtab) {

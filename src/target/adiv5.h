@@ -186,6 +186,7 @@
 #define ADIV5_AP_FLAGS_HAS_MEM         (1U << 1U)
 #define ADIV6_DP_FLAGS_HAS_PWRCTRL     (1U << 2U)
 #define ADIV6_DP_FLAGS_HAS_SYSRESETREQ (1U << 3U)
+#define ADIV5_AP_FLAGS_CORTEXM1_NO_DEBUG_IDS  (1U << 4U)
 
 /* ADIv5 Class 0x1 ROM Table Registers */
 #define ADI_ROM_MEMTYPE          0xfccU
